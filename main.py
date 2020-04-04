@@ -3,7 +3,6 @@ import os
 
 import ML_manager
 
-
 #CONSTANTS:
 UNFILLEDCELL = "unfilled cell"
 FILLEDCELL = "filled cell"
@@ -95,6 +94,7 @@ class DrawCanvas(tk.Canvas):
         tk.Canvas.__init__(self, master, width=cellSize * columnNumber, height=cellSize * rowNumber, *args, **kwargs)
 
         self.cellSize = cellSize
+        self.size = 1
 
         self.grid = []
         for row in range(rowNumber):
@@ -115,6 +115,7 @@ class DrawCanvas(tk.Canvas):
         self.bind("<B3-Motion>", self.handleMouseMotion2)
         # bind release button action - clear the memory of modified cells.
         self.bind("<ButtonRelease-1>", lambda event: self.switched.clear())
+        self.bind("<ButtonRelease-3>", lambda event: self.switched.clear())
 
         self.canDraw = True
         self.draw()
@@ -127,6 +128,10 @@ class DrawCanvas(tk.Canvas):
     def _eventCoords(self, event):
         row = int(event.y / self.cellSize)
         column = int(event.x / self.cellSize)
+        if row < 0:
+            row = 0
+        if column < 0:
+            column = 0
         return row, column
 
     def handleMouseClick(self, event):
@@ -142,23 +147,27 @@ class DrawCanvas(tk.Canvas):
 
     def handleMouseMotion1(self, event):
         row, column = self._eventCoords(event)
-        cell = self.grid[row][column]
+        for i in range(-1*self.size, self.size):
+            for j in range(-1*self.size, self.size):
+                cell = self.grid[row+i][column+j]
 
-        if cell not in self.switched and self.canDraw:
-            if cell.state == UNFILLEDCELL:
-                cell.SetState(FILLEDCELL)
-            cell.draw()
-            self.switched.append(cell)
+                if cell not in self.switched and self.canDraw:
+                    if cell.state == UNFILLEDCELL:
+                        cell.SetState(FILLEDCELL)
+                    cell.draw()
+                    self.switched.append(cell)
 
     def handleMouseMotion2(self, event):
         row, column = self._eventCoords(event)
-        cell = self.grid[row][column]
-
-        if cell not in self.switched and self.canDraw:
-            if cell.state == FILLEDCELL:
-                cell.SetState(UNFILLEDCELL)
-            cell.draw()
-            self.switched.append(cell)
+        for i in range(self.size*-1, self.size):
+            for j in range(self.size*-1, self.size):
+                cell = self.grid[row+j][column+i]
+        
+                if cell not in self.switched and self.canDraw:
+                    if cell.state == FILLEDCELL:
+                        cell.SetState(UNFILLEDCELL)
+                    cell.draw()
+                    self.switched.append(cell)
 
     def clear(self):
         self.delete("all")
