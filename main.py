@@ -1,5 +1,5 @@
 import tkinter as tk
-import webbrowser
+import os
 
 import ML_manager
 
@@ -33,15 +33,15 @@ class MainWindow(tk.Frame):
         self.master.resizable(False, False)
         self.pack(fill="both")
         self.topFrame.pack(fill="x")
-        self.clearButton.pack()
-        self.bottomFrame.pack(fill="x")
+        self.clearButton.pack(side="left")
+        self.helpButton.pack(side="left")
         self.MainCanvas.pack(fill="both")
         self.bottomFrame.pack(fill="both")
         self.AnalyzeButton.pack(side="left")
         self.NumberLabel.pack(side="left")
 
     def openHelp(self):
-        webbrowser.open("./README.md")
+        os.startfile('README.md')
 
     def _getArray(self):
         Array = []
