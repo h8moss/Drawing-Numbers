@@ -1,4 +1,7 @@
 import tkinter as tk
+import webbrowser
+
+import ML_manager
 
 
 #CONSTANTS:
@@ -10,15 +13,52 @@ class MainWindow(tk.Frame):
     def __init__(self, master=None, cnf={}, **kw):
         super().__init__(master=master, cnf=cnf, **kw)
         self.master = master
+
+        self.model = ML_manager.Model()
+
         self.topFrame = tk.Frame(self)
         self.MainCanvas = DrawCanvas(self, 28, 28, 10)
+        self.clearButton = tk.Button(self.topFrame, text="Clear", 
+                                     command=self.MainCanvas.clear)
+        self.helpButton = tk.Button(self.topFrame, text="Help", 
+                                    command=self.openHelp)
         self.bottomFrame = tk.Frame(self)
+        self.AnalyzeButton = tk.Button(self.bottomFrame, text="Guess!", 
+                                       command=self.getNumber)
+        self.NumberLabel = tk.Label(self.bottomFrame)
         self.packMe()
 
     def packMe(self):
         self.master.title("Number Draw")
-        self.pack(fill="both", expand=True)
-        self.MainCanvas.pack(fill="both", expand=True)
+        self.master.resizable(False, False)
+        self.pack(fill="both")
+        self.topFrame.pack(fill="x")
+        self.clearButton.pack()
+        self.bottomFrame.pack(fill="x")
+        self.MainCanvas.pack(fill="both")
+        self.bottomFrame.pack(fill="both")
+        self.AnalyzeButton.pack(side="left")
+        self.NumberLabel.pack(side="left")
+
+    def openHelp(self):
+        webbrowser.open("./README.md")
+
+    def _getArray(self):
+        Array = []
+        for n, i in enumerate(self.MainCanvas.grid):
+            Array.append([])
+            for j in i:
+                if j.state == UNFILLEDCELL:
+                    Array[n].append(0)
+                elif j.state == FILLEDCELL:
+                    Array[n].append(1)
+        return Array
+
+    def getNumber(self):
+        Array = self._getArray()
+        num = self.model.check(Array)
+        self.NumberLabel.configure(text=f"{str(num[0])}   {str(num[1])}% sure")
+
 
 
 class Cell():
@@ -119,6 +159,13 @@ class DrawCanvas(tk.Canvas):
                 cell.SetState(UNFILLEDCELL)
             cell.draw()
             self.switched.append(cell)
+
+    def clear(self):
+        self.delete("all")
+        for i in self.grid:
+            for j in i:
+                j.SetState(UNFILLEDCELL)
+        self.draw()
 
 if __name__ == "__main__":
     root = tk.Tk()

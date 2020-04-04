@@ -4,6 +4,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 import os
+import math
+
+
+def truncate(number, digits) -> float:
+    stepper = 10.0 ** digits
+    return math.trunc(stepper * number) / stepper
 """
 data = keras.datasets.mnist
 
@@ -56,3 +62,9 @@ class Model():
         model.fit(train_images, train_labels, epochs=7)
     
         model.save('./Model.h5') 
+
+    def check(self, array):
+        guess = 0
+        guess = self.model.predict([array])
+        num = np.argmax(guess[0])
+        return [num, truncate((guess[0][num]/1)*100, 3)]
