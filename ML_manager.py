@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 import os
-
+"""
 data = keras.datasets.mnist
 
 (train_images, train_labels), (test_images, test_labels) = data.load_data()
@@ -31,10 +31,28 @@ else:
 test_loss, test_acc = model.evaluate(test_images, test_labels)
 
 prediction = model.predict(test_images)
+"""
+class Model():
 
-for i in range(10):
-    plt.grid(False)
-    plt.imshow(test_images[i], cmap=plt.cm.binary)
-    plt.xlabel("Actual: " + str(test_labels[i]))
-    plt.title("Prediction: " + str(np.argmax(prediction[i])))
-    plt.show()
+    def __init__(self):
+        self.data = keras.datasets.mnist
+        if os.path.exists("./Model.h5"):
+            self.model = tf.keras.models.load_model('Model.h5')
+        else:
+            self.MakeModel()
+
+    def MakeModel(self):
+        #TODO: Don't separate into test and train, you only want to train
+        (train_images, train_labels), (test_images, test_labels) = self.data.load_data()
+        model = keras.Sequential([
+            keras.layers.Flatten(input_shape=(28, 28)),
+            keras.layers.Dense(128, activation="relu"),
+            keras.layers.Dense(10, activation="softmax")
+        ])
+    
+        model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", 
+        metrics=["accuracy"])
+    
+        model.fit(train_images, train_labels, epochs=7)
+    
+        model.save('./Model.h5') 
