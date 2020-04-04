@@ -1,13 +1,11 @@
 import tensorflow as tf
 from tensorflow import keras
 import numpy as np
-import matplotlib.pyplot as plt
-import pickle
 import os
 import math
 
 
-def truncate(number, digits) -> float:
+def truncate(number, digits):
     stepper = 10.0 ** digits
     return math.trunc(stepper * number) / stepper
 
@@ -38,7 +36,6 @@ class Model():
         self.model.save('./python/Model.h5') 
 
     def check(self, array):
-        guess = 0
         guess = self.model.predict([array])
         num = np.argmax(guess[0])
         return [num, truncate((guess[0][num]/1)*100, 3)]
