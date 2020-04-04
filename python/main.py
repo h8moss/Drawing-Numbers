@@ -40,7 +40,7 @@ class MainWindow(tk.Frame):
         self.NumberLabel.pack(side="left")
 
     def openHelp(self):
-        os.startfile('README.md')
+        os.startfile('../README.md')
 
     def _getArray(self):
         Array = []
