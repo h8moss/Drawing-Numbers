@@ -3,9 +3,10 @@ import os
 
 import ML_manager
 
-#CONSTANTS:
+# CONSTANTS:
 UNFILLEDCELL = "unfilled cell"
 FILLEDCELL = "filled cell"
+
 
 class MainWindow(tk.Frame):
 
@@ -16,13 +17,13 @@ class MainWindow(tk.Frame):
         self.model = ML_manager.Model()
 
         self.topFrame = tk.Frame(self)
-        self.MainCanvas = DrawCanvas(self, 28, 28, 10)
-        self.clearButton = tk.Button(self.topFrame, text="Clear", 
+        self.MainCanvas = DrawCanvas(self, 28, 28, 10, 1)
+        self.clearButton = tk.Button(self.topFrame, text="Clear",
                                      command=self.MainCanvas.clear)
-        self.helpButton = tk.Button(self.topFrame, text="Help", 
+        self.helpButton = tk.Button(self.topFrame, text="Help",
                                     command=self.openHelp)
         self.bottomFrame = tk.Frame(self)
-        self.AnalyzeButton = tk.Button(self.bottomFrame, text="Guess!", 
+        self.AnalyzeButton = tk.Button(self.bottomFrame, text="Guess!",
                                        command=self.getNumber)
         self.NumberLabel = tk.Label(self.bottomFrame)
         self.packMe()
@@ -40,7 +41,7 @@ class MainWindow(tk.Frame):
         self.NumberLabel.pack(side="left")
 
     def openHelp(self):
-        os.startfile('../README.md')
+        os.startfile("README.md")
 
     def _getArray(self):
         Array = []
@@ -55,9 +56,10 @@ class MainWindow(tk.Frame):
 
     def getNumber(self):
         Array = self._getArray()
+        for a in Array:
+            print(a)
         num = self.model.check(Array)
         self.NumberLabel.configure(text=f"{str(num[0])}   {str(num[1])}% sure")
-
 
 
 class Cell():
@@ -66,7 +68,6 @@ class Cell():
         self.xlocation = x
         self.ylocation = y
         self.size = size
-        #  Possible states: Unfilled, Filled, StartNode, EndNode, Path
         self.state = UNFILLEDCELL
 
     def SetState(self, state):
@@ -86,15 +87,17 @@ class Cell():
             ymin = self.ylocation * self.size
             ymax = ymin + self.size
 
-            self.master.create_rectangle(xmin, ymin, xmax, ymax, fill=fill, outline=outline)
+            self.master.create_rectangle(
+                xmin, ymin, xmax, ymax, fill=fill, outline=outline)
 
 
 class DrawCanvas(tk.Canvas):
-    def __init__(self, master, rowNumber, columnNumber, cellSize, *args, **kwargs):
-        tk.Canvas.__init__(self, master, width=cellSize * columnNumber, height=cellSize * rowNumber, *args, **kwargs)
+    def __init__(self, master, rowNumber, columnNumber, cellSize, size, *args, **kwargs):
+        tk.Canvas.__init__(self, master, width=cellSize * columnNumber,
+                           height=cellSize * rowNumber, *args, **kwargs)
 
         self.cellSize = cellSize
-        self.size = 1
+        self.size = size
 
         self.grid = []
         for row in range(rowNumber):
@@ -147,27 +150,43 @@ class DrawCanvas(tk.Canvas):
 
     def handleMouseMotion1(self, event):
         row, column = self._eventCoords(event)
-        for i in range(-1*self.size, self.size):
-            for j in range(-1*self.size, self.size):
-                cell = self.grid[row+i][column+j]
+        if self.size != 0:
+            for i in range(-1*self.size, self.size):
+                for j in range(-1*self.size, self.size):
+                    cell = self.grid[row+i][column+j]
 
-                if cell not in self.switched and self.canDraw:
-                    if cell.state == UNFILLEDCELL:
-                        cell.SetState(FILLEDCELL)
-                    cell.draw()
-                    self.switched.append(cell)
+                    if cell not in self.switched and self.canDraw:
+                        if cell.state == UNFILLEDCELL:
+                            cell.SetState(FILLEDCELL)
+                        cell.draw()
+                        self.switched.append(cell)
+        else:
+            cell = self.grid[row][column]
+            if cell not in self.switched and self.canDraw:
+                if cell.state == UNFILLEDCELL:
+                    cell.SetState(FILLEDCELL)
+                cell.draw()
+                self.switched.append(cell)
 
     def handleMouseMotion2(self, event):
         row, column = self._eventCoords(event)
-        for i in range(self.size*-1, self.size):
-            for j in range(self.size*-1, self.size):
-                cell = self.grid[row+j][column+i]
-        
-                if cell not in self.switched and self.canDraw:
-                    if cell.state == FILLEDCELL:
-                        cell.SetState(UNFILLEDCELL)
-                    cell.draw()
-                    self.switched.append(cell)
+        if self.size != 0:
+            for i in range(self.size*-1, self.size):
+                for j in range(self.size*-1, self.size):
+                    cell = self.grid[row+j][column+i]
+
+                    if cell not in self.switched and self.canDraw:
+                        if cell.state == FILLEDCELL:
+                            cell.SetState(UNFILLEDCELL)
+                        cell.draw()
+                        self.switched.append(cell)
+        else:
+            cell = self.grid[row][column]
+            if cell not in self.switched and self.canDraw:
+                if cell.state == FILLEDCELL:
+                    cell.SetState(UNFILLEDCELL)
+                cell.draw()
+                self.switched.append(cell)
 
     def clear(self):
         self.delete("all")
@@ -175,6 +194,7 @@ class DrawCanvas(tk.Canvas):
             for j in i:
                 j.SetState(UNFILLEDCELL)
         self.draw()
+
 
 if __name__ == "__main__":
     root = tk.Tk()
